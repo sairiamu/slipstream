@@ -1,0 +1,4 @@
+{
+  "name_regex": "\\d+\\.\\s+([A-Z, ]+)",
+  "reg_regex": "Reg:\\s+(\\d+)"
+}

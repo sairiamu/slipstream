@@ -1,0 +1,55 @@
+# Local dev: docker compose up --build
+# Production on Render: deploy backend and frontend as separate Web Services
+# Backend internal URL on Render: use the private service URL in nginx.conf proxy_pass
+# The timetable PDF is baked into the backend image at build time
+# To update the PDF: rebuild and redeploy the backend image
+
+version: "3.9"
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend.Dockerfile
+    container_name: slipstream-backend
+    restart: unless-stopped
+    environment:
+      - PDF_PATH=/app/data/timetable.pdf
+      - ADMIN_TOKEN=${ADMIN_TOKEN}
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:8080}
+    volumes:
+      # Persist the index so it survives container restarts
+      - timetable-index:/app/data
+    expose:
+      - "8000"
+    healthcheck:
+      test: ["CMD", "python", "-c",
+             "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/status')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s   # give time for startup indexing
+    networks:
+      - slipstream-net
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend.Dockerfile
+    container_name: slipstream-frontend
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - slipstream-net
+
+volumes:
+  timetable-index:
+    driver: local
+
+networks:
+  slipstream-net:
+    driver: bridge
