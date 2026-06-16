@@ -30,7 +30,8 @@ WORKDIR /app
 COPY backend/ ./backend/
 
 # Copy the timetable PDF into the container
-COPY "MUST_PERSONALIZED TIMETABLE_TEST 2_SEMESTER II 2025-2026_15-06-2026.pdf" ./data/timetable.pdf
+# COPY "MUST_PERSONALIZED TIMETABLE_TEST 2_SEMESTER II 2025-2026_15-06-2026.pdf" ./data/timetable.pdf
+COPY ["MUST_PERSONALIZED TIMETABLE_TEST 2_SEMESTER II 2025-2026_15-06-2026.pdf", "./data/timetable.pdf"]
 
 # Create data directory and set permissions
 RUN mkdir -p /app/data && \
